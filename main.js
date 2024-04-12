@@ -25,7 +25,7 @@ const TILEWIDTH = 48;
 const TILEHEIGHT = 48;
 
 let storyScene = false;
-let currentLevel = 0;
+let currentLevel = 1;
 
 //loadSprite("metal_sand", "sprites/textures/metal_wall.png")
 
@@ -472,7 +472,7 @@ scene("controls", () => {
             [R] - USE PICKAXE\n
             [C] - USE SHEARS\n
             [E] - OPEN CHESTS\n
-            [lCLICK] - SHOOT GUN / PULL OBJECTS`,
+            [;] - SHOOT GUN / PULL OBJECTS`,
       { font: "myFont" }
     ),
     pos(width() / 2 - 700, height() / 2 - 100),
@@ -691,7 +691,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(1.5),
+        scale(1.2),
         tile({ isObstacle: true }),
         offscreen({ hide: true }),
         "solid",
@@ -1621,6 +1621,7 @@ scene("game", (LEVEL) => {
   // level swicth
   let numberOfPortalShards = 0;
 
+  // ================================================ LEVEL SWITCH ============================
   switch (LEVEL.level) {
     case 1:
       loop(0.8, () => {
