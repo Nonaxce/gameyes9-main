@@ -19,6 +19,7 @@ const BULLET_SPEED = 1200;
 
 const SPAWNER_LIMIT = 2;
 const REGENINTERVALSECONDS = 20;
+const GRAVITY_INTERVAL = 6;
 
 const TILEWIDTH = 48;
 const TILEHEIGHT = 48;
@@ -1365,7 +1366,7 @@ scene("game", (LEVEL) => {
         angle = 0;
       }
 
-      if (timer === 6) {
+      if (timer === GRAVITY_INTERVAL) {
         timer = 0; // reset timer
         tween(
           angle,
