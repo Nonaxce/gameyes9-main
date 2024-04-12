@@ -17,7 +17,7 @@ const JUMP_STRENGTH = 670;
 const GUN_DAMAGE = 50;
 const BULLET_SPEED = 1200;
 
-const SPAWNER_LIMIT = 3;
+const SPAWNER_LIMIT = 2;
 const REGENINTERVALSECONDS = 20;
 
 const TILEWIDTH = 48;
@@ -189,9 +189,9 @@ loadSprite("healthbar", "sprites/textures/healthbar.png", {
       speed: 1,
     },
     h0: {
-        from: 15,
-        to: 15,
-        speed: 1,
+      from: 15,
+      to: 15,
+      speed: 1,
     },
   },
 });
@@ -934,7 +934,7 @@ scene("game", (LEVEL) => {
       sprite("charge", { flipX: player.flipX ? true : false }),
       scale(2),
       area(),
-      pos(player.pos.sub(0, 10)),
+      pos(player.pos.sub(0, 40)),
       anchor("center"),
       move(dir, BULLET_SPEED),
       lifespan(4),
@@ -1433,20 +1433,20 @@ scene("game", (LEVEL) => {
   ]);
 
   // adds health element to ui
-  var healthLabel = make([
+  let healthLabel = make([
     text("hp: " + player.health, { font: "myFont" }),
     pos(width() / 40, height() / 40),
     scale(0.9),
   ]);
 
   // adds health bar to ui relative to health labek
-  var healthBar = make([
+  let healthBar = make([
     sprite(`healthbar`),
     pos(healthLabel.pos.x + 140, healthLabel.pos.y - 5),
     scale(3),
   ]);
 
-  // add ui elements
+  // -------- add ui elements -----------
   ui.add(healthLabel);
   ui.add(healthBar);
 
@@ -1455,6 +1455,7 @@ scene("game", (LEVEL) => {
     healthLabel.text = "hp: " + player.health;
     const p = player.health;
 
+    // i know may must better solution for this
     switch (true) {
       case player.health >= 150:
         healthBar.play("h150");
@@ -1501,7 +1502,7 @@ scene("game", (LEVEL) => {
       case player.health <= 19 && player.health >= 10:
         healthBar.play("h10");
         break;
-      case player.health <= 9 && player.health >= 0:
+      case player.health <= 9 && player.health > 0:
         healthBar.play("h10");
         break;
       case player.health <= 0:
@@ -1510,7 +1511,7 @@ scene("game", (LEVEL) => {
       default:
         console.log("Somethung went wroing...");
     }
-    
+
     // the health bar will change color depending on how many is percent of health is left
   });
 
@@ -1524,9 +1525,10 @@ scene("game", (LEVEL) => {
   }
   onKeyDown("a", () => {
     // prevents player from moving while holding down the attack
-    if (!player.isAttacking) {
-      player.move(moveLeft * player.speedMultiplier, 0);
+    if (player.isAttacking) {
+      player.speedMultiplier = 0.7;
     }
+    player.move(moveLeft * player.speedMultiplier, 0);
 
     player.flipX = flipped;
     // if player is on the ground and is not attacking
@@ -1552,9 +1554,10 @@ scene("game", (LEVEL) => {
 
   onKeyDown("d", () => {
     // prevents player from moving while holding down the attack
-    if (!player.isAttacking) {
-      player.move(moveRight * player.speedMultiplier, 0);
+    if (player.isAttacking) {
+      player.speedMultiplier = 0.7;
     }
+    player.move(moveRight * player.speedMultiplier, 0);
 
     player.flipX = unFlipped;
     // if player is on the ground and is not attacking
@@ -1566,7 +1569,7 @@ scene("game", (LEVEL) => {
       player.play("run");
     } else {
       // else if is not grounded, jump will play
-      if (!player.isGrounded()) {
+      if (!player.isGrounded() && getGravity() > 0) {
         player.play("jump");
       }
     }
@@ -1602,7 +1605,7 @@ scene("game", (LEVEL) => {
     const currentTime = new Date().getTime(); // gets current time when the key is pressed
 
     // checks if current time has elapsed the said delay of 250ms
-    if (currentTime > lastTimeFired + 250) {
+    if (currentTime > lastTimeFired + 150) {
       // sets the currentTime to the lasttimefired
       lastTimeFired = currentTime;
       await fireGun(currentDir);
@@ -1610,6 +1613,7 @@ scene("game", (LEVEL) => {
   });
   onKeyRelease(";", () => {
     returnIdle();
+    player.speedMultiplier = 1;
     player.isAttacking = false;
   });
 
