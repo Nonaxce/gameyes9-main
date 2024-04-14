@@ -13,7 +13,7 @@ export const LEVELS_JS = [
         enemy: {
             sprite: "level-1-enemy",
             speed: 200,
-            scale: 3
+            scale: 2
         },
         item: "pickaxe",
         isGravityReversed: false,
@@ -34,10 +34,10 @@ export const LEVELS_JS = [
             "    =-     -=-     -=      =-      =========  ==================",
             " =  =       =       =  =  =-      =-       =  =",
             " -  ==     ===     ==  - =-      =-        =  =",
-            "==MMMMMMMMMMMMMMMMMMMMMMMM      =-    -----=  =----------",
+            "==------------------------      =-    -----=  =----------",
             "=-                             =-     =                 =",
-            "=                             =-      =                 =",
-            "==     P    C  &             ==       = !!   *      B ! =",
+            "=      P                      =-      =                 =",
+            "==          C  &             ==       = !!   *      B ! =",
             "==============================-       ===================",
             "            =",
             "            -",
@@ -61,28 +61,8 @@ export const LEVELS_JS = [
         item: "shears",
         isGravityReversed: false,
         map: [
-            "",
-            "",
-            "",
-            "",
-            "                                                                                                                                                   F",
-            "                                                                                                                                                33333333333       ",
-            "                                                                                                                                               3333333333333        ",
-            "                                                                                                                                               33         33",
-            "                                                                                                                                                         @33",
-            "                       F                                                                                                                       F       33333",
-            "             333333 3333333333333                                                                                                              3333333333333   ",
-            "               |              |                                                                                                                    33333 ",
-            "               |              |                                                                                                                     |||  ",
-            "        F |    |        &   C |                                                                                                                     |||  ",
-            "     33333333333333 33333333333                                                                                                                     |||",
-            "      | | | 3333333        33333                                                                                                                   F|||",
-            "  |   | | | 3333333        333333 3B3                                                                                                            33333333",
-            "  |   | | | 3333333 B   P  33333333|3            F          F      F     ! !       FF         S          B          S  FFFFFF    FF   FFF       3333333333",
-            "22222222222233333332222222233333333332222222222222222222222222222222222222222222222333333333333|333333333333333333333|333333333333333333333333333333333333333",
-            "                                                                                            3 3|3                   3|3 3                       3333333333   ",
-            "                                                                                             3 |                     | 3                         33333333",
-            "                                                                                              3|3                   3|3                            ",
+            "3     P      3                             S            S                      S         S" ,
+            "33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333"
         ]   
     },
     {
@@ -154,38 +134,32 @@ export const LEVELS_JS = [
         item: undefined,
 
         map: [
-            "                                                                                                                                                                                     ----------------                                                                                                       ",
-            "",
-            "",
-            "",
-            "",
-            "                                                                                                                 =---------------                   -------------       --------------              -------------",
-            "                                                                                                                 =                                                             *                          ",
-            "                                                                    -------------------                          =                                                                                        @",
-            "                                                                             *                                   =     S  )                         ~                                                     |",
-            "                                                                                                                 ============                       ~                                             ===============",
-            "",
-            "",
-            "                                                                             S                                                       --------=",
-            "                                                                                                                                            ==",
-            "                                                                                                                                             =",
-            "               ----------------                ------------------                          -----------------                 ===============(=",
-            "                      *",
-            "",
-            "                                                                             *                                        !! !   =                                      *",
-            "=-------------=               ==================                ============================              ====================                ========          =========           =========",
-            "=             =               =",
-            "=&                            =",
-            "=    P                        =",
-            "===============================                                                                                              ================                                                                                              ",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
+            "                                  MMMMMMMMMMMMMMMMMMMMMMMM+++++++++MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+            "                                  mm                                  m                             mm                                                                       ",
+            "                                  m                                   m                              m                                                                       ",
+            "                                  m            m                                   M                 m                                                                       ",
+            "                                  m @          m               *                S  M                mm                                                                       ",
+            "                                  MMMMMMMMMMMMMMm++++++++MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM      MMMMMM",
+            "M                          M        mmmmmmmmmmmm      M            M                     m      m",
+            "M                          M                          M            M                     m      m",
+            "M                          M                          M            M                     m      m",
+            "MMMMMMMMMMMMMM++++++++++MMMMMMMMMM+++++++MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM++++++++++++++M      MMMMMMMMM",
+            "mm  &                                                                                                   mm                                                                               ",
+            "m                                                                                                       mmm   ",
+            "m                                                                                                  S    mmmm    ",
+            "m            mMMMMMMMMMMMMMMMMMM         mmmMMMMMMMMMMMMMMMMMMM           MMMMMMmmmmMMMMMMMMMMMMMMMMMMMMMMMMM",
+            "m S          m  M           M  m                             mm            mMmmmmmmmmmmMmmmmmmmmMMmmmmmmmmmm",
+            "mMMMMMMMm    m                 m              )       *     (mm            +",
+            "mm           m                 m           mMMMMMMMMMMMMMMMMMMM            +",
+            "m            m   mMm      mMm  +   *       +                  +            +",
+            "m            m   mmm      mmm  +           +                  +            +",
+            "m            m   mMm      mMm  m           m                  +   *        +",
+            "m            m                 m           m                  +++MMMMMMMM+++",
+            "m P          m                 m           m                      mmmmmm ",
+            "mm          mm                 m           m",
+            "MMMMMMMMMMMMMM                 mMMMMMMMMMBMm",
+            
+
         ]
     },
     {
@@ -201,7 +175,7 @@ export const LEVELS_JS = [
         enemy: {
             sprite: "level-5-enemy",
             speed: 200,
-            scale: 3
+            scale: 2.1
         },
         hasEnemy: true,
         isGravityReversed: true,
@@ -210,10 +184,10 @@ export const LEVELS_JS = [
         map: [
             "",
             "MMMMMMMMMMMM                                           333333333333333333333~33333~333333333333333",
-            "mwPwwwwwwwwm                                           3                                         3",
+            "m P        m                                           3                                         3",
             "mwwwwwwwwwwm                                           3              S                          3",
             "MMMMMwwwwwwMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMm       33333333333           3333333     3",
-            "mwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww3       |",
+            "                                                       3       |",
             "mww&wwwwwwwWWWWWWWWWWWWWWSWWFWWWWWWWWWWWWWWWWWWWWWWWWWW3       |",
             "MMMMMMMMMMMM       MMMMMMMMMMMMMMM+++++++MMMMMM        3       |",
             "                                              |        |       |",
@@ -248,30 +222,8 @@ export const LEVELS_JS = [
             "",
             "",
             "",
+            
+
         ]
     },
-    {
-        level: 6,
-
-        bg: {
-            sprite: "level-5-bg",
-            scale: 4.7,
-        },
-
-        levelNote: {
-            text: "Juno 31, 3005  \n I finnally finished the shrine, and it looks a bit weird. \n Well anyway now my comrades and I can safeguard our portals, \n I locked the portal for maintainance reasons, \n the key, its uh hidden somewhere.."
-        },
-        enemy: {
-            sprite: "level-1-enemy",
-            speed: 200,
-            scale: 3
-        },
-        hasEnemy: true,
-        
-        isGravityReversed: true,
-        map: [
-            "  P              !   !",
-            "==========================="
-        ]
-    }
 ]

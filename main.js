@@ -11,21 +11,24 @@ kaboom({
 const GRAVITY = 1400;
 const LEVELS = LEVELS_JS;
 const PLAYER_HEALTH = 150;
-const BASE_PLAYER_SPEED = 400;
-const JUMP_STRENGTH = 670;
+const BASE_PLAYER_SPEED = 300;
+const JUMP_STRENGTH = 550;
 
-const GUN_DAMAGE = 50;
+const ATTACK1_SPEED = 1200;
+const ATTACK2_SPEED = 600;
+
 const BULLET_SPEED = 1200;
-
 const SPAWNER_LIMIT = 2;
 const REGENINTERVALSECONDS = 20;
 const GRAVITY_INTERVAL = 6;
+const TILESCALE16 = 2;
+const TILESCALE32 = 1;
 
-const TILEWIDTH = 48;
-const TILEHEIGHT = 48;
+const TILEWIDTH = 32;
+const TILEHEIGHT = 32;
 
 let storyScene = false;
-let currentLevel = 1;
+let currentLevel = 2;
 
 //loadSprite("metal_sand", "sprites/textures/metal_wall.png")
 
@@ -77,16 +80,99 @@ loadSprite("note", "sprites/textures/note.png", {
     },
   },
 });
-loadSprite("charge", "sprites/textures/charge.png", {
-  sliceX: 6,
+
+loadSprite("attack1", "sprites/textures/attacks/attack1.png", {
+  sliceX: 2,
   sliceY: 1,
-  scale: 1,
   anims: {
-    chargeAnim: {
+    attackAnim: {
       from: 0,
-      to: 5,
-      speed: 10,
-      loop: true,
+      to: 1,
+      speed: 5,
+      loop: false,
+    },
+  },
+});
+loadSprite("attack2", "sprites/textures/attacks/attack2.png", {
+  sliceX: 4,
+  sliceY: 1,
+  anims: {
+    attackAnim: {
+      from: 0,
+      to: 3,
+      speed: 11,
+      loop: false,
+    },
+  },
+});
+loadSprite("attack3", "sprites/textures/attacks/attack3.png", {
+  sliceX: 1,
+  sliceY: 10,
+  anims: {
+    attackAnim: {
+      from: 0,
+      to: 9,
+      speed: 14,
+      loop: false,
+    },
+  },
+});
+
+// =========================== attack particles =========================
+loadSprite(
+  "attack1_particle",
+  "sprites/textures/attacks/attack1_damage_particle.png",
+  {
+    sliceX: 4,
+    anims: {
+      attack_particle: {
+        from: 0,
+        to: 3,
+        speed: 20,
+        loop: false,
+      },
+    },
+  }
+);
+loadSprite(
+  "attack2_particle",
+  "sprites/textures/attacks/attack2_damage_particle.png",
+  {
+    sliceX: 10,
+    anims: {
+      attack_particle: {
+        from: 0,
+        to: 9,
+        speed: 11,
+        loop: false,
+      },
+    },
+  }
+);
+loadSprite(
+  "attack3_particle",
+  "sprites/textures/attacks/attack3_damage_particle.png",
+  {
+    sliceX: 3,
+    anims: {
+      attack_particle: {
+        from: 0,
+        to: 2,
+        speed: 4,
+        loop: true,
+      },
+    },
+  }
+);
+
+loadSprite("footsteps", "sprites/textures/footsteps.png", {
+  sliceX: 2,
+  anims: {
+    footstepsAnim: {
+      from: 0,
+      to: 1,
+      speed: 5,
+      loop: false,
     },
   },
 });
@@ -275,14 +361,13 @@ loadSprite("level-2-enemy", "sprites/enemies/level-2-enemy.png", {
 
 // LEVEL 3
 loadSprite("lava", "sprites/textures/level-3/lava.png", {
-  sliceX: 4,
-  sliceY: 1,
-  scale: 1,
+  sliceX: 2,
+  scale: 2,
   anims: {
     burn: {
       from: 0,
-      to: 3,
-      speed: 10,
+      to: 1,
+      speed: 2,
       loop: true,
     },
   },
@@ -345,40 +430,23 @@ loadSprite("level-5-enemy", "sprites/enemies/level-5-enemy.png", {
   },
 });
 loadSprite("acid", "sprites/textures/level-5/acid.png", {
-  sliceX: 4,
+  sliceX: 2,
   anims: {
     acidAnim: {
       from: 0,
-      to: 3,
+      to: 1,
       speed: 6,
       loop: true,
     },
   },
 });
 loadSprite("metalfloor", "sprites/textures/level-5/metalfloor.png");
-loadSprite(
-  "metalfloor_closed",
-  "sprites/textures/level-5/metalfloor_closed.png"
-);
-loadSprite(
-  "metalwall_warning",
-  "sprites/textures/level-5/metalwall_warning.png",
-  {
-    sliceX: 2,
-    anims: {
-      metalwall_warningAnim: {
-        from: 0,
-        to: 1,
-        speed: 6,
-        loop: true,
-      },
-    },
-  }
-);
+loadSprite("metalfloor_closed","sprites/textures/level-5/metalfloor_closed.png");
+loadSprite("metalwall_warning","sprites/textures/level-5/metalwall_warning.png");
 loadSprite("metalwall", "sprites/textures/level-5/metalwall.png");
 loadSprite("metalwall_up", "sprites/textures/level-5/metalwall_up.png");
 loadSprite("portalorb", "sprites/textures/level-5/portalOrb.png");
-
+loadSprite("metalwall_overgrown", "sprites/textures/level-5/metalwall_overgrown.png")
 // font
 loadFont("myFont", "fonts/DotGothic16-Regular.ttf");
 
@@ -566,7 +634,7 @@ scene("failed", (causeOfDeath) => {
 
 scene("game", (LEVEL) => {
   setGravity(GRAVITY);
-
+  let isUpsideDown = false;
   // BACKGROUND
   const bg = add([
     sprite(LEVEL.bg.sprite),
@@ -585,16 +653,17 @@ scene("game", (LEVEL) => {
       area({
         scale: 0.8,
         shape: new Polygon([
-          vec2(-9, -40),
-          vec2(9, -40),
-          vec2(9, 0),
-          vec2(-9, 0),
+          vec2(-9, -17),
+          vec2(9, -17),
+          vec2(9, 18),
+          vec2(-9, 18),
         ]),
       }),
       body(),
       health(PLAYER_HEALTH),
-      anchor("bot"),
-      scale(2.7),
+      anchor("center"),
+      time(),
+      scale(1.8),
       // player properties
       {
         // status
@@ -603,7 +672,6 @@ scene("game", (LEVEL) => {
         // items
         inventory: {
           portal_shards: 0,
-          healing_potions: 1,
           tools: [],
         },
         weapons: {
@@ -615,8 +683,10 @@ scene("game", (LEVEL) => {
         // misc
         helmetOn: true,
         //
+        // BOOLEANS / STATES
         canGoToNextLevel: true, // by default
         isAttacking: false,
+        isMoving: false,
       },
       "player",
     ];
@@ -628,7 +698,14 @@ scene("game", (LEVEL) => {
         sprite(LEVEL.enemy.sprite, {
           flipY: getGravity() == GRAVITY ? false : true,
         }),
-        area(scale(0.6)),
+        area({
+          shape: new Polygon([
+            vec2(-9, -32),
+            vec2(9, -32),
+            vec2(9, 0),
+            vec2(-9, 0),
+          ]),
+        }),
         body(),
         //pos(x, y),
         anchor("bot"),
@@ -648,7 +725,7 @@ scene("game", (LEVEL) => {
 
   const createNote = (text) => {
     return [
-      sprite("note"),
+      sprite("note", { anim: "bounce" }),
       area(),
       body({ isStatic: true }),
       anchor("bot"),
@@ -670,7 +747,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(1),
+        scale(0.7),
         tile({ isObstacle: true }),
         offscreen({ hide: true }),
         "solid",
@@ -681,7 +758,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(1),
+        scale(0.7),
         tile({ isObstacle: true }),
         offscreen({ hide: true }),
         "solid",
@@ -691,7 +768,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(1.2),
+        scale(TILESCALE32),
         tile({ isObstacle: true }),
         offscreen({ hide: true }),
         "solid",
@@ -701,27 +778,36 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(1.5),
+        scale(TILESCALE32),
         tile({ isObstacle: true }),
         offscreen({ hide: true }),
         "solid",
       ],
       w: () => [
         sprite("metalwall"),
-        //area(),
+        area(),
         z(-1),
-        //body({isStatic: true}),
+        body({isStatic: true}),
         anchor("bot"),
-        scale(1.5),
+        scale(TILESCALE32),
         offscreen({ hide: true }),
       ],
       W: () => [
-        sprite("metalwall_warning", { anim: "metalwall_warningAnim" }),
-        //area(),
+        sprite("metalwall_warning"),
+        area(),
         z(-1),
-        //body({isStatic: true}),
+        body({isStatic: true}),
         anchor("bot"),
-        scale(1.5),
+        scale(TILESCALE32),
+        offscreen({ hide: true }),
+      ],
+      O: () => [
+        sprite("metalwall_overgrown"),
+        area(),
+        z(-1),
+        body({isStatic: true}),
+        anchor("bot"),
+        scale(TILESCALE32),
         offscreen({ hide: true }),
       ],
       // SAND
@@ -730,7 +816,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE32),
         //tile({ isObstacle: true }),
         offscreen({ hide: true }),
         "solid",
@@ -738,14 +824,20 @@ scene("game", (LEVEL) => {
       "+": () => [
         sprite("acid", { anim: "acidAnim" }),
         area({
+          shape: new Polygon([
+            vec2(-12, -32),
+            vec2(12, -32),
+            vec2(12, 0),
+            vec2(-12, 0),
+          ]),
           scale: 1,
         }),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(1.5),
+        scale(TILESCALE32),
         tile({ isObstacle: true }),
         offscreen({ hide: true }),
-        "solid",
+        "acid",
       ],
       // SAND BRICK
       3: () => [
@@ -753,7 +845,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         //tile({ isObstacle: true }),
         offscreen({ hide: true }),
         "solid",
@@ -763,7 +855,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         //tile({ isObstacle: true }),
         offscreen({ hide: true }),
         "solid",
@@ -775,7 +867,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(1.5),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "spike",
       ],
@@ -785,7 +877,7 @@ scene("game", (LEVEL) => {
         area(),
         body(),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "ejector",
         "movable",
@@ -796,7 +888,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "chest",
       ],
@@ -806,7 +898,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "portal",
       ],
@@ -816,7 +908,7 @@ scene("game", (LEVEL) => {
         area(),
         body(),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "activator",
         "movable",
@@ -827,25 +919,25 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "stationer",
       ],
       "~": () => [
-        sprite("lava"),
+        sprite("lava", { anim: "burn" }),
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE32 + 0.1),
         offscreen({ hide: true }),
         "lava",
       ],
       "*": () => [
-        sprite("portalShard"),
+        sprite("portalShard", { anim: "sparkle" }),
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "portalShard",
       ],
@@ -857,7 +949,7 @@ scene("game", (LEVEL) => {
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "spawner",
       ],
@@ -867,11 +959,11 @@ scene("game", (LEVEL) => {
       "&": () => createNote(LEVEL.levelNote.text),
       // desert-fig
       F: () => [
-        sprite("desert-fig"),
+        sprite("desert-fig", { anim: "sway" }),
         area(),
         body({ isStatic: true }),
         anchor("bot"),
-        scale(3),
+        scale(TILESCALE16),
         offscreen({ hide: true }),
         "desertfig",
       ],
@@ -926,25 +1018,151 @@ scene("game", (LEVEL) => {
 
   // ========================================== using gun =============================
 
-  async function fireGun(dir) {
-    // returns a bullet pointing in the direction of the player
-    if (player.curAnim() !== "attack") {
-      player.play("attack");
+  let lastTimeFiredAttack1 = new Date().getTime();
+  async function attack1() {
+    player.isAttacking = true;
+
+    let currentDir = undefined; // stores the player's current direction and thus the direction the attack
+
+    // checks if the player is flipped or not
+    if (player.flipX == flipped) {
+      currentDir = fireGunLEFT;
+    } else {
+      currentDir = fireGunRIGHT;
     }
-    const charge = add([
-      sprite("charge", { flipX: player.flipX ? true : false }),
-      scale(2),
-      area(),
-      pos(player.pos.sub(0, 40)),
-      anchor("center"),
-      move(dir, BULLET_SPEED),
-      lifespan(4),
-      {
-        DIR: dir, // wala direction data sa gin butang ko na lang diri
-      },
-      "bullet",
-    ]);
-    charge.play("chargeAnim");
+
+    const currentTime1 = new Date().getTime(); // gets current time when the key is pressed
+
+    // checks if current time has elapsed the said delay of 250ms
+    if (currentTime1 > lastTimeFiredAttack1 + 250) {
+      // sets the currentTime to the lasttimefired
+      lastTimeFiredAttack1 = currentTime1;
+
+      if (player.curAnim() !== "attack") {
+        player.play("attack");
+      }
+
+      player.speedMultiplier = 0.7;
+      // returns a bullet pointing in the direction of the player
+      await add([
+        sprite("attack1", {
+          flipX: player.flipX ? true : false,
+          anim: "attackAnim",
+        }),
+        scale(1),
+        area({
+          scale: 0.4,
+        }),
+        pos(player.pos.sub(0, isUpsideDown ? 0 : 2)),
+        anchor("center"),
+        move(currentDir, ATTACK1_SPEED),
+        lifespan(4),
+        {
+          DIR: currentDir, // wala direction data sa gin butang ko na lang diri
+          damage: 50,
+        },
+        "attack1",
+      ]);
+    }
+  }
+
+  let lastTimeFiredAttack2 = new Date().getTime();
+  async function attack2() {
+    player.isAttacking = true;
+    let currentDir = undefined; // stores the player's current direction and thus the direction the attack
+
+    // checks if the player is flipped or not
+    if (player.flipX == flipped) {
+      currentDir = fireGunLEFT;
+    } else {
+      currentDir = fireGunRIGHT;
+    }
+
+    const currentTime2 = new Date().getTime(); // gets current time when the key is pressed
+
+    // checks if current time has elapsed the said delay of 250ms
+    if (currentTime2 > lastTimeFiredAttack2 + 500) {
+      // sets the currentTime to the lasttimefired
+      lastTimeFiredAttack2 = currentTime2;
+
+      if (player.curAnim() !== "attack") {
+        player.play("attack");
+      }
+
+      player.speedMultiplier = 0.7;
+      // returns a bullet pointing in the direction of the player
+      await add([
+        sprite("attack2", {
+          flipX: player.flipX ? true : false,
+          anim: "attackAnim",
+        }),
+        scale(1),
+        area({
+          scale: 0.4,
+        }),
+        pos(player.pos.sub(0, isUpsideDown ? 0 : 2)),
+        anchor("center"),
+        move(currentDir, ATTACK2_SPEED),
+        lifespan(4),
+        {
+          DIR: currentDir, // wala direction data sa gin butang ko na lang diri
+          damage: 20,
+          enemiesHurt: 0,
+          maxEnemies: 4,
+        },
+        "attack2",
+      ]);
+    }
+  }
+
+  onUpdate(() => {
+    console.log(player.curAnim());
+  });
+
+  let lastTimeFiredAttack3 = new Date().getTime();
+  async function attack3() {
+    player.isAttacking = true;
+    let currentDir = undefined; // stores the player's current direction and thus the direction the attack
+
+    // checks if the player is flipped or not
+    if (player.flipX == flipped) {
+      currentDir = fireGunLEFT;
+    } else {
+      currentDir = fireGunRIGHT;
+    }
+
+    const currentTime3 = new Date().getTime(); // gets current time when the key is pressed
+
+    // checks if current time has elapsed the said delay of 250ms
+    if (currentTime3 > lastTimeFiredAttack3 + 5000) {
+      // sets the currentTime to the lasttimefired
+      lastTimeFiredAttack3 = currentTime3;
+
+      if (player.curAnim() !== "attack") {
+        player.play("attack");
+      }
+
+      player.speedMultiplier = 0.7;
+      // returns a bullet pointing in the direction of the player
+      await add([
+        sprite("attack3", {
+          flipX: player.flipX ? true : false,
+          anim: "attackAnim",
+        }),
+        scale(3.2),
+        area({
+          scale: 0.95,
+        }),
+        pos(player.pos.sub(player.flipX ? 80 : -80, isUpsideDown ? 0 : 2)),
+        anchor("center"),
+        lifespan(0.8),
+        {
+          DIR: currentDir, // wala direction data sa gin butang ko na lang diri
+          damage: 300,
+        },
+        "attack3",
+      ]);
+    }
   }
 
   // ========================================== calls when player dies ================
@@ -969,16 +1187,16 @@ scene("game", (LEVEL) => {
     };
   }
   // spawns a particle for exploosionss
-  function addExplode(p, num, rad, size) {
+  function addExplode(p, num, rad, size, spritee = "bullet-explosion") {
     for (let i = 0; i < num; i++) {
       wait(rand(num * 0.1), () => {
         for (let i = 0; i < 2; i++) {
           add([
             pos(p.add(rand(vec2(-rad), vec2(rad)))),
-            sprite("bullet-explosion"),
+            sprite(spritee),
             scale(1 * size, 1 * size),
             lifespan(0.2),
-            grow(rand(9, 30) * size),
+            grow(rand(9, 14) * size),
             anchor("center"),
           ]);
         }
@@ -986,50 +1204,82 @@ scene("game", (LEVEL) => {
     }
   }
 
-  // ===================================== bullet collisions ============================
-  onCollide("enemy", "bullet", (e, b) => {
-    addExplode(b.pos, 1, 1, 1); // add some exploding
-    e.hurt(GUN_DAMAGE); // hurt the enemy
-    destroy(b); // and remove the bullet like nothing happened
+  function addParticle(p, spritee, scalee, dir, lf) {
+    return add([
+      pos(p.sub(rand(1, 10), rand(17, 25))),
+      sprite(spritee, {
+        flipX: dir === fireGunLEFT ? true : false,
+        anim: "attack_particle",
+      }),
+      scale(scalee),
+      lifespan(lf),
+      anchor("center"),
+    ]);
+  }
+
+  // ===================================== attack collisions ============================
+  onCollide("enemy", "attack1", (e, a) => {
+    addParticle(e.pos, "attack1_particle", 1.3, a.DIR, 0.3); // add some exploding
+    e.hurt(a.damage); // hurt the enemy
+    destroy(a); // and remove the bullet like nothing happened
   });
 
   // if a bullet hits a wall
-  onCollide("solid", "bullet", (s, b) => {
-    addExplode(b.pos, 1, 1, 1); // add some exploding
-    destroy(b); // remove the evidence
+  onCollide("solid", "attack1", (s, a) => {
+    addParticle(s.pos, "attack1_particle", 1.3, a.DIR, 0.3); // add some exploding
+    destroy(a); // remove the evidence
   });
 
   // If a bullet gets shot on a movable object it apparently defys newtons third law of motion and propels the object.. backward! ?
-  onCollide("movable", "bullet", function (m, b) {
-    if (b.DIR === fireGunLEFT) {
-      m.pos.x += 10;
-    } else if (b.DIR === fireGunRIGHT) {
-      m.pos.x -= 10;
+  onCollide("movable", "attack1", function (m, a) {
+    if (a.DIR === fireGunLEFT) {
+      tween(
+        m.pos.x,
+        m.pos.x + 20,
+        0.4,
+        (val) => (m.pos.x = val),
+        easings.easeOutQuad
+      );
+    } else if (a.DIR === fireGunRIGHT) {
+      tween(
+        m.pos.x,
+        m.pos.x - 20,
+        0.4,
+        (val) => (m.pos.x = val),
+        easings.easeOutQuad
+      );
     }
-    destroy(b); // also remove the evidence
+    destroy(a); // also remove the evidence
+  });
+
+  onCollide("enemy", "attack2", (e, a) => {
+    addParticle(e.pos, "attack2_particle", 2, a.DIR, 0.7); // add some exploding; // add some exploding
+    e.hurt(a.damage); // hurt the enemy
+    if (a.enemiesHurt > a.maxEnemies) {
+      destroy(a); // remove the evidence
+    }
+  });
+
+  // if a bullet hits a wall
+  onCollide("solid", "attack2", (s, a) => {
+    addParticle(a.pos, "attack2_particle", 2, a.DIR, 0.7); // add some exploding; // add some exploding
+    destroy(a); // remove the evidence
+  });
+
+  // If a bullet gets shot on a movable object it apparently defys newtons third law of motion and propels the object.. backward! ?
+
+  onCollide("enemy", "attack3", (e, a) => {
+    addParticle(e.pos, "attack3_particle", 3, a.DIR, 0.7);
+    e.hurt(a.damage); // hurt the enemy
+  });
+
+  // if a bullet hits a wall
+  onCollide("solid", "attack3", (s, a) => {
+    addParticle(s.pos, "attack3_particle", 1, a.DIR, 0.7);
+    destroy(a);
   });
 
   // ==================================== tile animations ==============================
-
-  if (level.get("desertfig")) {
-    for (const desertfig of level.get("desertfig")) {
-      desertfig.play("sway");
-    }
-  }
-
-  for (const note of level.get("note")) {
-    note.play("bounce");
-  }
-
-  for (const portalShard of level.get("portalShard")) {
-    portalShard.play("sparkle");
-  }
-
-  if (level.get("lava")) {
-    for (const lava of level.get("lava")) {
-      lava.play("burn");
-    }
-  }
 
   /* --------------------- EVENTS -------------------------- */
 
@@ -1056,7 +1306,11 @@ scene("game", (LEVEL) => {
 
   // lava
   onCollide("player", "lava", () => {
-    go("failed", "toasted alive");
+    go("failed", "burnt alive");
+  });
+
+  onCollide("player", "acid", () => {
+    damagePlayer(50);
   });
 
   // ========================================= chests =============================
@@ -1212,7 +1466,7 @@ scene("game", (LEVEL) => {
       // if the number of enemies is less than: THE ENEMY LIMIT OF EACH SPAWNER COMBINED + ENEMIES THAT ALREADY SPAWNED IN THE LEVEL
       if (level.get("spawner").length > 0) {
         if (
-          level.get("enemyFromSpawner").length <=
+          level.get("enemyFromSpawner").length <
           SPAWNER_LIMIT * level.get("spawner").length
         ) {
           const spawner = level.get("spawner");
@@ -1233,29 +1487,31 @@ scene("game", (LEVEL) => {
   // checks if spawners do exist in this level
   if (level.get("spawner").length > 0) {
     activateEnemySpawners(); // hindi paglimtan i run
-
-    // if player is next to a spawner and is carrying a pickaxe, the spawner will break
-    let currentSpawner = "";
-    player.onCollide("spawner", async (spawner) => {
-      // to prevent all spawners from breaking in certain cases the current spawner is stored
-      currentSpawner = spawner;
-      await onKeyPress("r", function () {
-        if (currentSpawner && spawner) {
-          // if the player has "pickaxe" in their inventory
-          if (player.inventory.tools.includes("pickaxe") === true) {
-            addExplode(player.pos, 1, 1, 1);
-            destroy(spawner);
-          } else {
-            addExclaim("you need a pickaxe", player.pos);
-          }
-        }
-      });
-    });
-    player.onCollideEnd("spawner", async () => {
-      await wait(0.3); // since kis a ga jump ka, so may delay para ma catch gyapon
-      currentSpawner = "";
-    });
   }
+
+  // if player is next to a spawner and is carrying a pickaxe, the spawner will break
+  let currentSpawner = "";
+  onCollide("spawner", "player", async (spawner, p) => {
+    // to prevent all spawners from breaking in certain cases the current spawner is stored
+    currentSpawner = spawner;
+    await wait(0.05);
+    await onKeyPress("r", function () {
+      if (currentSpawner) {
+        // if the player has "pickaxe" in their inventory
+        if (p.inventory.tools.includes("pickaxe") === true) {
+          addExplode(p.pos, 1, 1, 1);
+          destroy(currentSpawner);
+        } else {
+          addExclaim("you need a pickaxe", p.pos);
+        }
+      }
+      console.log(currentSpawner);
+    });
+  });
+
+  onCollideEnd("spawner", "player", () => {
+    currentSpawner = null;
+  });
 
   // ====================================== enemy ===============================
 
@@ -1268,10 +1524,10 @@ scene("game", (LEVEL) => {
 
     enemy.onStateEnter("attack", async () => {
       if (
-        player.pos.y >= enemy.pos.y - 100 &&
-        player.pos.y <= enemy.pos.y + 20 &&
-        player.pos.x >= enemy.pos.x - 1000 &&
-        player.pos.x <= enemy.pos.x + 1000 &&
+        player.pos.y >= enemy.pos.y - 50 &&
+        player.pos.y <= enemy.pos.y + 50 &&
+        player.pos.x >= enemy.pos.x - 500 &&
+        player.pos.x <= enemy.pos.x + 500 &&
         enemy.exists() // for some reason ga tiro gyapon ang enemy even though wala na ga exist
       ) {
         enemy.play("attack");
@@ -1301,14 +1557,14 @@ scene("game", (LEVEL) => {
 
     enemy.onStateUpdate("move", async () => {
       if (
-        player.pos.y >= enemy.pos.y - 100 &&
-        player.pos.y <= enemy.pos.y + 20 &&
-        player.pos.x >= enemy.pos.x - 1000 &&
-        player.pos.x <= enemy.pos.x + 1000
+        player.pos.y >= enemy.pos.y - 10 &&
+        player.pos.y <= enemy.pos.y + 10 &&
+        player.pos.x >= enemy.pos.x - 500 &&
+        player.pos.x <= enemy.pos.x + 500
       )
         return;
 
-      const dir = player.pos.sub(enemy.pos).unit();
+      const dir = player.pos.sub(enemy.pos.x, enemy.pos.y).unit();
       enemy.move(dir.scale(LEVEL.enemy.speed));
 
       if (player.pos.sub(enemy.pos).unit().scale(1).x < 0) {
@@ -1384,6 +1640,12 @@ scene("game", (LEVEL) => {
           setGravity(GRAVITY);
         }
 
+        if (getGravity() < 0) {
+          isUpsideDown = true;
+        } else {
+          isUpsideDown = false;
+        }
+
         // funcs that makes sure that hindi weird when upside down
         await shake(10); // *planet's core exploding*
         reverseControls(); // reverse controls
@@ -1443,7 +1705,7 @@ scene("game", (LEVEL) => {
   // adds health bar to ui relative to health labek
   let healthBar = make([
     sprite(`healthbar`),
-    pos(healthLabel.pos.x + 140, healthLabel.pos.y - 5),
+    pos(healthLabel.pos.x + 140, healthLabel.pos.y - 15),
     scale(3),
   ]);
 
@@ -1523,24 +1785,41 @@ scene("game", (LEVEL) => {
     if (player.curAnim() !== "idle") {
       player.play("idle");
     }
+    player.speedMultiplier = 1;
+    player.isAttacking = false;
   }
+
+  function runningParticles() {
+    loop(rand(0.1, 0.2), async () => {
+      if (player.isMoving && (player.isGrounded() || isUpsideDown)) {
+        return add([
+          pos(player.pos.sub(player.flipX ? 20 : 30, isUpsideDown ? 37 : -10)),
+          sprite("footsteps", {
+            anim: "footstepsAnim",
+            flipX: player.flipX ? true : false,
+          }),
+          scale(1),
+          lifespan(1),
+        ]);
+      }
+    });
+  }
+
+  runningParticles()
+
+  // ===================================== ===================================
+  
+
+  // ===================================== left ===================================
   onKeyDown("a", () => {
     // prevents player from moving while holding down the attack
-    if (player.isAttacking) {
-      player.speedMultiplier = 0.7;
-    }
     player.move(moveLeft * player.speedMultiplier, 0);
-
+    player.isMoving = true;
     player.flipX = flipped;
-    // if player is on the ground and is not attacking
-    if (
-      player.curAnim() !== "run" &&
-      player.isGrounded() &&
-      !player.isAttacking
-    ) {
+
+    if (player.curAnim() !== "run" && player.isGrounded()) {
       player.play("run");
     } else {
-      // else if is not grounded, jump will play
       if (!player.isGrounded()) {
         player.play("jump");
       }
@@ -1550,27 +1829,22 @@ scene("game", (LEVEL) => {
     // return anim to idle
     if (player.curAnim() !== "idle") {
       returnIdle();
+      player.isMoving = false;
     }
   });
 
+  // ===================================== right ===================================
   onKeyDown("d", () => {
     // prevents player from moving while holding down the attack
-    if (player.isAttacking) {
-      player.speedMultiplier = 0.7;
-    }
-    player.move(moveRight * player.speedMultiplier, 0);
 
+    player.move(moveRight * player.speedMultiplier, 0);
+    player.isMoving = true;
     player.flipX = unFlipped;
-    // if player is on the ground and is not attacking
-    if (
-      player.curAnim() !== "run" &&
-      player.isGrounded() &&
-      !player.isAttacking
-    ) {
+
+    if (player.curAnim() !== "run" && player.isGrounded()) {
       player.play("run");
     } else {
-      // else if is not grounded, jump will play
-      if (!player.isGrounded() && getGravity() > 0) {
+      if (!player.isGrounded()) {
         player.play("jump");
       }
     }
@@ -1579,9 +1853,11 @@ scene("game", (LEVEL) => {
     // return anim to idle
     if (player.curAnim() !== "idle") {
       returnIdle();
+      player.isMoving = false;
     }
   });
 
+  // ===================================== jumping ===================================
   onKeyPress("space", () => {
     if (player.curAnim() !== "jump" && player.isGrounded()) {
       player.jump(JUMP_STRENGTH * player.jumpMultiplier);
@@ -1590,32 +1866,23 @@ scene("game", (LEVEL) => {
   });
   onKeyRelease("space", returnIdle);
 
-  // keep tracks of when was the last time an attack was used
-  let lastTimeFired = new Date().getTime();
-  onKeyDown(";", async () => {
-    player.isAttacking = true;
-    let currentDir = undefined; // stores the player's current direction and thus the direction the attack
+  
 
-    // checks if the player is flipped or not
-    if (player.flipX == flipped) {
-      currentDir = fireGunLEFT;
-    } else {
-      currentDir = fireGunRIGHT;
-    }
-
-    const currentTime = new Date().getTime(); // gets current time when the key is pressed
-
-    // checks if current time has elapsed the said delay of 250ms
-    if (currentTime > lastTimeFired + 150) {
-      // sets the currentTime to the lasttimefired
-      lastTimeFired = currentTime;
-      await fireGun(currentDir);
-    }
-  });
-  onKeyRelease(";", () => {
+  // =============================================== ATTACKS ====================================
+  // ========================= ATK !1 
+  onKeyDown(",", attack1);
+  onKeyRelease(",", () => {
     returnIdle();
-    player.speedMultiplier = 1;
-    player.isAttacking = false;
+  });
+  // =========================== ATK 2
+  onKeyDown(".", attack2);
+  onKeyRelease(".", () => {
+    returnIdle();
+  });
+  // ============================ ATK 3
+  onKeyDown("/", attack3);
+  onKeyRelease("/", () => {
+    returnIdle();
   });
 
   // level swicth
@@ -1632,7 +1899,7 @@ scene("game", (LEVEL) => {
 
       var oxygenBar = make([
         text("Oxygen:" + player.oxygen, { font: "myFont" }),
-        pos(healthLabel.pos.x, healthLabel.pos.y + 50),
+        pos(healthLabel.pos.x, healthLabel.pos.y + 70),
         scale(0.8),
       ]);
 
@@ -1677,14 +1944,14 @@ scene("game", (LEVEL) => {
         }
       });
 
-      camScale(1);
+      camScale(1.5);
       break;
     case 2:
       // adds pickaxe to inventory
       player.inventory.tools.push("pickaxe");
 
       // slows the player down kay may hangin
-      player.speedMultiplier = 0.5;
+      player.speedMultiplier = 1;
 
       // for deserts and stuff
       let currentDesertFig = "";
@@ -1707,9 +1974,12 @@ scene("game", (LEVEL) => {
         currentDesertFig = "";
       });
 
-      camScale(1);
+      camScale(1.5);
       break;
     case 3:
+      player.inventory.tools.push("pickaxe");
+      player.inventory.tools.push("shears");
+
       numberOfPortalShards = level.get("portalShard").length;
 
       onUpdate(async () => {
@@ -1726,7 +1996,7 @@ scene("game", (LEVEL) => {
                      ${player.inventory.portal_shards} / ${numberOfPortalShards}
                  `);
       });
-      camScale(1.1);
+      camScale(1.5);
       break;
 
     case 4:
@@ -1753,7 +2023,7 @@ scene("game", (LEVEL) => {
                     `);
         }
       });
-      camScale(0.7);
+      camScale(1.5);
       break;
 
     case 5:
@@ -1783,8 +2053,10 @@ scene("game", (LEVEL) => {
         }
       });
 
-      camScale(1.1);
+      camScale(1.5);
       break;
+    case 6:
+      camScale(1.5);
     default:
       console.log("Error level does not exist");
   }
