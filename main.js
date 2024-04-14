@@ -27,8 +27,8 @@ const TILESCALE32 = 1;
 const TILEWIDTH = 32;
 const TILEHEIGHT = 32;
 
-let storyScene = true;
-let currentLevel = 0;
+let storyScene = false;
+let currentLevel = 2;
 
 //loadSprite("metal_sand", "sprites/textures/metal_wall.png")
 
