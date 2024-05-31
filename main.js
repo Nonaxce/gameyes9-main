@@ -978,6 +978,10 @@ scene("game", (LEVEL) => {
     camPos(player.pos);
   });
 
+  player.onBeforePhysicsResolve(() => {
+    camPos(player.pos)
+  })
+
   /* ======================================= dynamic direction values ========================== */
   let moveLeft = -BASE_PLAYER_SPEED;
   let moveRight = BASE_PLAYER_SPEED;
