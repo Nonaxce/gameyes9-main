@@ -982,6 +982,18 @@ scene("game", (LEVEL) => {
     camPos(player.pos)
   })
 
+  const fpsCounter = add([
+    text(debug.fps(), {
+      size: 40
+    }),
+    pos(width() - 100, 100),
+    fixed()
+  ])
+
+  fpsCounter.onUpdate(() => {
+    fpsCounter.text = debug.fps()
+  })
+
   /* ======================================= dynamic direction values ========================== */
   let moveLeft = -BASE_PLAYER_SPEED;
   let moveRight = BASE_PLAYER_SPEED;
